@@ -160,7 +160,7 @@ Future<void> decreaseQuantity(String productId, {required String cartId}) async 
     );
     
     if (result['success'] == true) {
-      print('✅ Quantity decreased successfully');
+      print('✅ Quantity decreased successfully maked API call');
       await _loadCartItems();
     } else {
       print('❌ Failed to decrease quantity: ${result['message']}');
