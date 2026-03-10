@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'QR Scanner App',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primarySwatch: Colors.green,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: const SplashScreen(),
@@ -77,21 +77,36 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue.shade800,
+      backgroundColor: const Color.fromARGB(255, 21, 192, 55),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(color: Colors.white),
-            const SizedBox(height: 20),
-            Text(
+            Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Icon(
+                    Icons.shopping_cart,
+                    size: 60,
+                    color: const Color.fromARGB(255, 13, 175, 37),
+                  ),
+                ),
+                 Text(
               'QR Scanner System',
               style: TextStyle(
                 fontSize: 24,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
-            ),                                                
+            ),
+            const CircularProgressIndicator(color: Colors.white),
+            const SizedBox(height: 20),
+            
+                                                           
           ],
         ),
       ),
