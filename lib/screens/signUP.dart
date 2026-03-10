@@ -60,7 +60,7 @@ class _SignUpPageState extends State<SignUpPage> {
         if (mounted) {
           _showDialog('Success', 'Account created successfully!', isSuccess: true);
           Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) Navigator.pop(context, true);
+            if (mounted) Navigator.pushReplacementNamed(context, '/login');
           });
         }
       } else {
@@ -101,8 +101,8 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sign Up'),
-        backgroundColor: Colors.blue.shade800,
+       
+        backgroundColor: const Color.fromARGB(255, 146, 233, 117),
         elevation: 0,
       ),
       body: SafeArea(
@@ -167,6 +167,10 @@ class _SignUpPageState extends State<SignUpPage> {
                   height: 50,
                   child: OutlinedButton(
                     onPressed: _isLoading ? null : _signUp,
+                    
+                      
+                    
+                    
                     child: _isLoading
                         ? const SizedBox(
                             width: 20,
@@ -177,11 +181,11 @@ class _SignUpPageState extends State<SignUpPage> {
                             'Sign Up',
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.blue.shade800,
+                              color: const Color.fromARGB(255, 21, 192, 52),
                             ),
                           ),
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.blue.shade800, width: 1.5),
+                      side: BorderSide(color: const Color.fromARGB(255, 81, 192, 21), width: 1.5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -192,7 +196,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 
                 // Login link
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pushReplacementNamed(context,'/login'),
                   child: const Text(
                     'Already have an account? Login',
                     style: TextStyle(fontSize: 14),
