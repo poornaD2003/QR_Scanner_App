@@ -749,6 +749,39 @@ class ApiService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> getActiveCarts({required String token}) async {
+  try {
+    final response = await _authenticatedRequest(
+      'GET', 
+      '/carts/active', 
+      token: token,
+    );
+    
+    if (response?.statusCode == 200) {
+      final List<dynamic> data = json.decode(response!.body);
+      return data.map((e) => e as Map<String, dynamic>).toList();
+    }
+    return [];
+  } catch (e) {
+    print('❌ Error getting active carts: $e');
+    return [];
+  }
+}
+
+  static Future<bool> forceCheckoutCart(String cartId, {required String token}) async {
+  try {
+    final response = await _authenticatedRequest(
+      'POST', 
+      '/carts/$cartId/force-checkout', 
+      token: token,
+    );
+    return response?.statusCode == 200;
+  } catch (e) {
+    print('❌ Error forcing checkout: $e');
+    return false;
+  }
+}
+
   // In api_service.dart - Update addToCart method
 static Future<Map<String, dynamic>> addToCart(
   String cartId, 
@@ -847,6 +880,53 @@ static Future<Map<String, dynamic>> removeOneFromCart({
   }
 }
 
+
+// Get all products
+static Future<List<Product>> getAllProducts({required String token}) async {
+  try {
+    final response = await _authenticatedRequest('GET', '/products', token: token);
+    
+    if (response?.statusCode == 200) {
+      final List<dynamic> data = json.decode(response!.body);
+      return data.map((e) => Product.fromJson(e)).toList();
+    }
+    return [];
+  } catch (e) {
+    print('❌ Error getting products: $e');
+    return [];
+  }
+}
+
+// Delete product
+static Future<bool> deleteProduct(String productId, {required String token}) async {
+  try {
+    final response = await _authenticatedRequest(
+      'DELETE', 
+      '/products/$productId', 
+      token: token,
+    );
+    return response?.statusCode == 200;
+  } catch (e) {
+    print('❌ Error deleting product: $e');
+    return false;
+  }
+}
+
+// Get all bills for reports
+static Future<List<Map<String, dynamic>>> getAllBills({required String token}) async {
+  try {
+    final response = await _authenticatedRequest('GET', '/bills', token: token);
+    
+    if (response?.statusCode == 200) {
+      final List<dynamic> data = json.decode(response!.body);
+      return data.map((e) => e as Map<String, dynamic>).toList();
+    }
+    return [];
+  } catch (e) {
+    print('❌ Error getting bills: $e');
+    return [];
+  }
+}
 
 
 // Remove all transactions for a product in a cart
@@ -1049,7 +1129,8 @@ static Future<List<Product>> getCartItems(String cartId, {required String token}
     required String barcode,
     required String name,
     required double price,
-    required String token,
+    required String token, 
+    required int quantity,
   }) async {
     try {
       final response = await _authenticatedRequest(
@@ -1060,6 +1141,7 @@ static Future<List<Product>> getCartItems(String cartId, {required String token}
           'qr_code': barcode,
           'name': name,
           'price': price,
+          'quantity': quantity,
         },
       );
       
