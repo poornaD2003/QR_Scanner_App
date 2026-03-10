@@ -22,6 +22,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController(text: '1'); // Default quantity to 1
   bool _saving = false;
 
   @override
@@ -35,6 +36,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   void dispose() {
     _nameController.dispose();
     _priceController.dispose();
+    _quantityController.dispose();
     super.dispose();
   }
 
@@ -50,6 +52,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         barcode: widget.barcode,
         name: _nameController.text.trim(),
         price: double.parse(_priceController.text),
+        quantity: int.parse(_quantityController.text),
         token: widget.token, // Use the token from widget
       );
 
@@ -152,11 +155,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
               // Price field
               TextFormField(
                 controller: _priceController,
-                decoration: const InputDecoration(
-                  labelText: 'Price',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.attach_money),
+                decoration:  InputDecoration(
+                  labelText: 'Price (Rs)',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    prefixIcon: const Icon(Icons.attach_money),
+                  
+                  
                 ),
+                
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -165,6 +173,28 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   final price = double.tryParse(value);
                   if (price == null || price <= 0) {
                     return 'Please enter a valid price';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // quantity field (optional, default to 1)
+              TextFormField(
+                controller: _quantityController,
+                decoration: const InputDecoration(
+                  labelText: 'Quantity',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.format_list_numbered),
+                ),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter quantity';
+                  }
+                  final quantity = double.tryParse(value);
+                  if (quantity == null || quantity <= 0) {
+                    return 'Please enter a valid quantity';
                   }
                   return null;
                 },
