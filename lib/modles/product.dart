@@ -25,6 +25,8 @@ class Product {
 
   double get total => price * quantity;
 
+  get qrCode => null;
+
   @override
   String toString() {
     return 'Product{id: $productId, name: $name, price: $price, qty: $quantity}';
