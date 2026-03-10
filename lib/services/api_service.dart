@@ -748,6 +748,41 @@ class ApiService {
       return null;
     }
   }
+  static Future<Map<String, dynamic>> checkCartSession(
+  String cartId, {
+  required String token,
+}) async {
+  try {
+    final response = await _authenticatedRequest(
+      'GET',
+      '/cart/$cartId/session-status',
+      token: token,
+    );
+    
+    if (response?.statusCode == 200) {
+      return json.decode(response!.body);
+    }
+    return {'session_active': true}; // Default to true on error
+  } catch (e) {
+    print('❌ Error checking session: $e');
+    return {'session_active': true};
+  }
+}
+
+// Admin endpoint to clean up expired sessions
+static Future<bool> cleanupExpiredSessions({required String token}) async {
+  try {
+    final response = await _authenticatedRequest(
+      'POST',
+      '/admin/cleanup-sessions',
+      token: token,
+    );
+    return response?.statusCode == 200;
+  } catch (e) {
+    print('❌ Error cleaning up sessions: $e');
+    return false;
+  }
+}
 
   static Future<List<Map<String, dynamic>>> getActiveCarts({required String token}) async {
   try {
@@ -908,6 +943,40 @@ static Future<bool> deleteProduct(String productId, {required String token}) asy
     return response?.statusCode == 200;
   } catch (e) {
     print('❌ Error deleting product: $e');
+    return false;
+  }
+}
+static Future<bool> updateProduct({
+  required String productId,
+  required String name,
+  required double price,
+  required int quantity,
+  required String token,
+}) async {
+  try {
+    print('📝 Updating product: $productId');
+    
+    final response = await _authenticatedRequest(
+      'PUT',
+      '/products/$productId',
+      token: token,
+      body: {
+        'name': name,
+        'price': price,
+        'quantity': quantity,
+        
+      },
+    );
+    
+    if (response?.statusCode == 200) {
+      print('✅ Product updated successfully');
+      return true;
+    } else {
+      print('❌ Failed to update product: ${response?.statusCode}');
+      return false;
+    }
+  } catch (e) {
+    print('❌ Error updating product: $e');
     return false;
   }
 }
