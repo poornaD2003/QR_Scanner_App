@@ -2,6 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import 'all_products_screen.dart';
+import 'sales_reports_screen.dart';
+import 'active_carts_screen.dart';
+import 'unknown_barcodes_screen.dart';
 
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({Key? key}) : super(key: key);
@@ -12,10 +16,10 @@ class AdminHomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin Dashboard'),
+        title: const Text('Admin Dashboard'),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: () {
               context.read<AuthProvider>().logout();
               Navigator.pushReplacementNamed(context, '/login');
@@ -37,7 +41,7 @@ class AdminHomeScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           child: Icon(Icons.admin_panel_settings),
                         ),
                         const SizedBox(width: 16),
@@ -47,12 +51,12 @@ class AdminHomeScreen extends StatelessWidget {
                             children: [
                               Text(
                                 'Welcome, ${user?.username ?? 'Admin'}',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Text(
+                              const Text(
                                 'Administrator',
                                 style: TextStyle(color: Colors.grey),
                               ),
@@ -63,7 +67,7 @@ class AdminHomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'You have full access to manage unknown barcodes and products.',
+                      'You have full access to manage unknown barcodes, products, and monitor active carts.',
                       style: TextStyle(color: Colors.grey.shade600),
                     ),
                   ],
@@ -72,7 +76,7 @@ class AdminHomeScreen extends StatelessWidget {
             ),
             
             const SizedBox(height: 20),
-            Text(
+            const Text(
               'Admin Actions',
               style: TextStyle(
                 fontSize: 20,
@@ -88,25 +92,34 @@ class AdminHomeScreen extends StatelessWidget {
                 mainAxisSpacing: 16,
                 childAspectRatio: 1.2,
                 children: [
-                  // Manage Unknown Barcodes
+                  // Unknown Barcodes
                   _buildAdminCard(
                     icon: Icons.list,
                     title: 'Unknown Barcodes',
                     color: Colors.orange,
+                    textSize: 14,
                     onTap: () {
-                      Navigator.pushNamed(context, '/unknown-barcodes');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const UnknownBarcodesScreen(),
+                        ),
+                      );
                     },
                   ),
                   
-                  // View All Products
+                  // All Products
                   _buildAdminCard(
                     icon: Icons.inventory,
-                    title: 'All Products',
+                    title: 'All Products' ,
                     color: Colors.blue,
+                    textSize: 14,
                     onTap: () {
-                      // TODO: Implement products management screen
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Products management coming soon')),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AllProductsScreen(),
+                        ),
                       );
                     },
                   ),
@@ -116,23 +129,29 @@ class AdminHomeScreen extends StatelessWidget {
                     icon: Icons.analytics,
                     title: 'Sales Reports',
                     color: Colors.green,
+                    textSize: 14,
                     onTap: () {
-                      // TODO: Implement sales reports
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Reports coming soon')),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SalesReportsScreen(),
+                        ),
                       );
                     },
                   ),
                   
-                  // Cart Management
+                  // Active Carts
                   _buildAdminCard(
                     icon: Icons.shopping_cart_checkout,
                     title: 'Active Carts',
                     color: Colors.purple,
+                    textSize: 14,
                     onTap: () {
-                      // TODO: Implement cart monitoring
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Cart monitoring coming soon')),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ActiveCartsScreen(),
+                        ),
                       );
                     },
                   ),
@@ -150,6 +169,7 @@ class AdminHomeScreen extends StatelessWidget {
     required String title,
     required Color color,
     required VoidCallback onTap,
+    required double textSize,
   }) {
     return Card(
       elevation: 4,
@@ -180,7 +200,7 @@ class AdminHomeScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: textSize,
                 ),
               ),
             ],
