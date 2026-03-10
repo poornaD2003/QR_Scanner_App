@@ -12,11 +12,18 @@ class CartProvider extends ChangeNotifier {
   Timer? _refreshTimer;
   bool _isLoading = false;
   double _lastTotal = 0.0;
+   Timer? _sessionTimer;
+   int _sessionStartTime = 0;
+  static const int SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+  
+  
 
   String? get cartId => _cartId;
   List<Product> get items => _items;
   bool get isLoading => _isLoading;
   double get lastTotal => _lastTotal;
+   int get sessionTimeRemaining => 
+      SESSION_TIMEOUT - (DateTime.now().millisecondsSinceEpoch - _sessionStartTime);
   
   double get total {
     _lastTotal = _items.fold(0.0, (sum, item) => sum + item.total);
@@ -24,7 +31,6 @@ class CartProvider extends ChangeNotifier {
   }
 
   // Initialize cart from session
-  // In cart_provider.dart - update initializeCart
 Future<void> initializeCart({required String sessionCart}) async {
   _isLoading = true;
   notifyListeners();
@@ -32,7 +38,6 @@ Future<void> initializeCart({required String sessionCart}) async {
   try {
     if (sessionCart.isEmpty) {
       print('⚠️ Empty session cart provided');
-      // Try to get from AuthService as fallback
       final savedCart = await AuthService.getSessionCart();
       if (savedCart != null) {
         _cartId = savedCart;
@@ -48,6 +53,13 @@ Future<void> initializeCart({required String sessionCart}) async {
     
     // Load cart items if we have a cart ID
     if (_cartId != null) {
+      final isValid = await _checkSessionValidity();
+      if(!isValid){
+        await _handleExpiredSession();
+        return;
+      }
+      _sessionStartTime = DateTime.now().millisecondsSinceEpoch;
+     
       await _loadCartItems();
       
       // Set up periodic refresh
@@ -55,6 +67,11 @@ Future<void> initializeCart({required String sessionCart}) async {
       _refreshTimer = Timer.periodic(
         const Duration(seconds: 3),
         (timer) => _refreshCartItems(),
+      );
+      _sessionTimer?.cancel();
+      _sessionTimer = Timer.periodic(
+        const Duration(minutes: 1),
+        (timer) => _monitorSession(),
       );
     }
   } catch (e) {
@@ -65,35 +82,64 @@ Future<void> initializeCart({required String sessionCart}) async {
   }
 }
 
+Future<bool> _checkSessionValidity() async {
+    try {
+      final token = await AuthService.getToken();
+      if (token == null) return false;
+      
+      // You'd need to add this endpoint
+      final response = await ApiService.checkCartSession(_cartId!, token: token);
+      return response['session_active'] == true;
+    } catch (e) {
+      print('❌ Error checking session: $e');
+      return true; // Assume valid on error
+    }
+  }
+  Future<void> _monitorSession() async {
+    if (_cartId == null) return;
+    
+    final timeRemaining = sessionTimeRemaining;
+    print('⏰ Session time remaining: ${timeRemaining ~/ 60000} minutes');
+    
+    if (timeRemaining <= 5 * 60 * 1000) { // 5 minutes remaining
+      // Show warning
+      // You'd implement this with a callback or stream
+    }
+    
+    if (timeRemaining <= 0) {
+      await _handleExpiredSession();
+    }
+  }
+   Future<void> _handleExpiredSession() async {
+    print('⚠️ Session expired for cart $_cartId');
+    
+    _items.clear();
+    _cartId = null;
+    _refreshTimer?.cancel();
+    _sessionTimer?.cancel();
+    
+    await AuthService.clearSessionCart();
+    notifyListeners();
+    
+    // You'd show a dialog here
+  }
+
   // Load cart items from server
   // In cart_provider.dart - update _loadCartItems method
 Future<void> _loadCartItems() async {
-  if (_cartId == null) {
-    print('❌ Cannot load items: cartId is null');
-    return;
-  }
-  
-  try {
-    final token = await AuthService.getToken();
-    if (token == null) {
-      print('❌ No token for loading cart items');
-      return;
+    if (_cartId == null) return;
+    
+    try {
+      final token = await AuthService.getToken();
+      if (token == null) return;
+      
+      final items = await ApiService.getCartItems(_cartId!, token: token);
+      _items = items;
+      notifyListeners();
+    } catch (e) {
+      print('❌ Error loading cart items: $e');
     }
-    
-    print('🔄 Loading items for cart $_cartId');
-    final items = await ApiService.getCartItems(_cartId!, token: token);
-    
-    print('📦 Received ${items.length} items from API');
-    
-    // Update items even if empty (to show empty cart)
-    _items = items;
-    notifyListeners();
-    
-    print('✅ Cart updated with ${items.length} items');
-  } catch (e) {
-    print('❌ Error loading cart items: $e');
   }
-}
 
   Future<void> _refreshCartItems() async {
     if (_cartId == null) return;
@@ -201,7 +247,12 @@ Future<bool> addItem(String qrCode) async {
     print('❌ No session cart available');
     return false;
   }
-  
+  if (sessionTimeRemaining <= 0) {
+    print('❌ Cannot add item: session expired');
+    await _handleExpiredSession();
+    return false;
+  }
+
   try {
     _isLoading = true;
     notifyListeners();
@@ -272,6 +323,7 @@ Future<bool> addItem(String qrCode) async {
         _items.clear();
         _cartId = null;
         _refreshTimer?.cancel();
+        _sessionTimer?.cancel();
         
         // Clear session cart from AuthService
         await AuthService.clearSessionCart();
@@ -297,6 +349,7 @@ Future<bool> addItem(String qrCode) async {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _sessionTimer?.cancel();
     super.dispose();
   }
 }
